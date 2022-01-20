@@ -4,19 +4,24 @@ using UnityEngine;
 
 public class Monster : MonoBehaviour
 {
+    //몬스터 스탯 ----------------------------------------------------------
     public float currentHP = 1;
     public float fullHP = 1;
     public float moveSpeed = 5f;
     public float jumpPower = 10;
+    public float atkPower = 1;
     public float atkCoolTime = 3f;
     public float atkCoolTimeCalc = 3f;
 
+
+    // 몬스터 상태 -------------------------------------------------------
     public bool isHit = false;
     public bool isGround = true;
     public bool canAtk = true;
     public bool MonsterDirRight;
     public Rigidbody2D rigid;
 
+    //메소드 선언 --------------------------------------------------------
     protected Rigidbody2D rb;
     protected BoxCollider2D boxCollider;
     public GameObject hitBoxCollider;

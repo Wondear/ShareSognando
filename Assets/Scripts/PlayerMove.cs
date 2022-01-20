@@ -4,7 +4,7 @@ using UnityEngine;
 
 
 public class PlayerMove : MonoBehaviour
-{   
+{
     public GameManager gameManager;
     public float maxSpeed;
     public float jumpPower;
@@ -21,8 +21,9 @@ public class PlayerMove : MonoBehaviour
     float direction = 1;
     float horizontal;
     float normalGravity;
-    public bool isLadder; 
-
+    public bool isLadder;
+    public bool Climb =false;
+    public Vector3 Lpos;
 
 
 
@@ -37,14 +38,18 @@ public class PlayerMove : MonoBehaviour
     }
     // Start is called before the first frame update
 
-    void Update() {
-        if(Input.GetButtonDown("Jump") && !animator.GetBool("isJumping") && underAttack == false && jumpCnt > 0)
+    void Update()
+    {
+        if (Input.GetButtonDown("Jump") && !animator.GetBool("isJumping") && underAttack == false && jumpCnt > 0)
         {
+            Climb = false;
+            animator.SetBool("isClimb", false);
             rigid.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
             animator.SetBool("isJumping", true);
+
         }
 
-        if(Input.GetButtonDown("Jump") && animator.GetBool("isJumping") && underAttack == false && jumpCnt > 0)
+        if (Input.GetButtonDown("Jump") && animator.GetBool("isJumping") && underAttack == false && jumpCnt > 0)
         {
             rigid.velocity = Vector2.up * jumpPower;
             animator.SetBool("isJumping", true);
@@ -53,6 +58,7 @@ public class PlayerMove : MonoBehaviour
         if (Input.GetButtonUp("Jump")) // 만약 점프키를 떼면
         {
             jumpCnt--; // jumpCnt를 1씩 차감
+
         }
 
         if (!animator.GetBool("isJumping")) // 만약 점프 애니메이션이 재생 중이면
@@ -60,14 +66,26 @@ public class PlayerMove : MonoBehaviour
             jumpCnt = jumpCount; // jumpCnt를 Jump Count 값으로 변경
         }
 
-        if(Input.GetButtonUp("Horizontal"))
+
+        if (Input.GetButtonDown("Vertical") && isLadder == true)
+        {
+            Climb = true;
+            animator.SetBool("isClimb", true);
+            animator.SetBool("isJumping", false);
+        }
+   
+
+            // 걷는 동작 ----------------------------------------------
+            if (Input.GetButtonUp("Horizontal"))
         {
             rigid.velocity = new Vector2(rigid.velocity.normalized.x * 0.5f, rigid.velocity.y);
             animator.SetBool("isWalking", false);
         }
 
-        if(Input.GetButton("Horizontal")){
-            spriteRenderer.flipX = Input.GetAxisRaw("Horizontal") == -1;
+        if (Input.GetButton("Horizontal"))
+        {
+            spriteRenderer.flipX = Input.GetAxisRaw("Horizontal") == -1; //spriteRenderer  좌우 반전
+            //capsuleCollider.set.Offset = new Vector2(capsuleCollider.x * (-1), capsuleCollider.y);
             animator.SetBool("isWalking", true);
         }
 
@@ -94,40 +112,48 @@ public class PlayerMove : MonoBehaviour
 
         rigid.AddForce(Vector2.right * h, ForceMode2D.Impulse);
 
-        if(rigid.velocity.x > maxSpeed)
+        if (rigid.velocity.x > maxSpeed)
         {
             rigid.velocity = new Vector2(maxSpeed, rigid.velocity.y);
         }
-        else if(rigid.velocity.x < maxSpeed * (-1))
+        else if (rigid.velocity.x < maxSpeed * (-1))
         {
             rigid.velocity = new Vector2(maxSpeed * (-1), rigid.velocity.y);
         }
 
+        // 캐릭터 아래에 바닥이 있는지 확인, 착지함 -------------------------------------------------------------------
         Debug.DrawRay(rigid.position, Vector3.down, new Color(0, 1, 0));
 
         RaycastHit2D rayHit = Physics2D.Raycast(rigid.position, Vector3.down, 1, LayerMask.GetMask("Platform"));
 
-        if(rayHit.collider != null && rigid.velocity.y < 0)
+        if (rayHit.collider != null && rigid.velocity.y < 0)
         {
-            if(rayHit.distance < 0.6f)
+            if (rayHit.distance < 0.7f)
+            {   animator.SetBool("isClimb", false);
                 animator.SetBool("isJumping", false);
+                Climb = false;
+                
+            }
         }
 
-        if (isLadder) // 만약 bool isLadder 함수가 실행되면
-        {
+        if (Climb) // 만약 bool Climb 함수가 실행되면
+        {   
             rigid.gravityScale = 0; // 캐릭터 중력값 0으로 변경
             float ver = Input.GetAxis("Vertical"); // 방향키 위아래 버튼을 누를 시
-            rigid.velocity = new Vector2(rigid.velocity.x, ver * maxSpeed); // 좌우 이동로직 적용 (최대 속도 등)
+            capsuleCollider.transform.position = new Vector2(Lpos.x, capsuleCollider.transform.position.y); 
+            rigid.velocity = new Vector2(0 , ver * maxSpeed); // 좌우 이동로직 적용x (최대 속도 등)
         }
         else // 그렇지 않으면
         {
             rigid.gravityScale = 4f; // 캐릭터 중력값 4로 변경
         }
 
+
+
         // 대쉬
         if (isDashing) // 만약 bool isDashing 함수가 실행되면
         {
-            rigid.AddForce(new Vector2(direction * 15,0), ForceMode2D.Impulse); // 캐릭터 바라보는 방향으로 (기본값: 15)만큼의 힘을 줌
+            rigid.AddForce(new Vector2(direction * 15, 0), ForceMode2D.Impulse); // 캐릭터 바라보는 방향으로 (기본값: 15)만큼의 힘을 줌
             //rigid.gravityScale = 0; // 캐릭터 중력값 0으로 변경 (보류)
         }
     }
@@ -143,12 +169,14 @@ public class PlayerMove : MonoBehaviour
         canDash = true; // 대쉬를 할 수 있는 상태가 됨
     }
 
+    // 적과의 충돌-------------------------------------------------------------
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if(collision.gameObject.tag == "Enemy" || collision.gameObject.tag == "Trap")
+        if (collision.gameObject.tag == "Enemy" || collision.gameObject.tag == "Trap")
         {
-            if(rigid.velocity.y < 0 && transform.position.y > collision.transform.position.y)
+            if (rigid.velocity.y < 0 && transform.position.y > collision.transform.position.y)
             {
+                //GameObJect.Find("Enemy").GetComponent < Monster > ().atkPower
                 OnAttack(collision.transform);
             }
             else
@@ -160,29 +188,33 @@ public class PlayerMove : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if(collision.gameObject.tag == "Item")
+        if (collision.gameObject.tag == "Item")
         {
             bool isBronze = collision.gameObject.name.Contains("Bronze");
             bool isSilver = collision.gameObject.name.Contains("Silver");
             bool isGold = collision.gameObject.name.Contains("Gold");
             collision.gameObject.SetActive(false);
-            if(isBronze){
+            if (isBronze)
+            {
                 gameManager.stagePoint += 50;
             }
-            else if(isSilver){
+            else if (isSilver)
+            {
                 gameManager.stagePoint += 100;
             }
-            else if(isGold){
+            else if (isGold)
+            {
                 gameManager.stagePoint += 300;
             }
         }
-        else if(collision.gameObject.tag == "Finish")
+        else if (collision.gameObject.tag == "Finish")
         {
             gameManager.NextStage();
         }
-        else if(collision.CompareTag("Ladder"))
+        else if (collision.CompareTag("Ladder"))
         {
-            isLadder = true;
+            Lpos = collision.transform.position;
+            isLadder = true; // 사다리를 탈 수 있는 상태
         }
     }
 
@@ -198,27 +230,28 @@ public class PlayerMove : MonoBehaviour
 
         gameObject.layer = 11;
 
-        spriteRenderer.color = new Color(1,1,1,0.4f);
+        spriteRenderer.color = new Color(1, 1, 1, 0.4f);
 
         int dirc = transform.transform.position.x - targetPos.x > 0 ? 1 : -1;
-        rigid.AddForce(new Vector2(dirc,1)*7,ForceMode2D.Impulse);
+        rigid.AddForce(new Vector2(dirc, 1) * 7, ForceMode2D.Impulse);
 
         animator.SetTrigger("Damaged");
 
         underAttack = true;
-        
+
         Invoke("OffDamaged", 1);
     }
 
     void OffDamaged()
     {
         gameObject.layer = 10;
-        spriteRenderer.color = new Color(1,1,1,1f);
+        spriteRenderer.color = new Color(1, 1, 1, 1f);
         underAttack = false;
     }
 
-    public void OnDie() {
-        spriteRenderer.color = new Color(1,1,1,0.4f);
+    public void OnDie()
+    {
+        spriteRenderer.color = new Color(1, 1, 1, 0.4f);
         spriteRenderer.flipY = true;
         capsuleCollider.enabled = false;
         rigid.AddForce(Vector2.up * 5, ForceMode2D.Impulse);
@@ -240,6 +273,7 @@ public class PlayerMove : MonoBehaviour
         if (collision.CompareTag("Ladder"))
         {
             isLadder = false; //isLadder 함수 중지
+            Climb = false;
         }
     }
 }
