@@ -9,7 +9,8 @@ public class FollowingMonster : Monster
         Idle,
         Run,
         Attack,
-        Jump
+        Jump,
+        Dead
     };
 
     public State currentState = State.Idle;
@@ -62,6 +63,7 @@ public class FollowingMonster : Monster
                 else if(Physics2D.OverlapCircle(wallCheck[1].position, 0.01f, layerMask)){
                     MonsterFlip();
                 }
+                // 플레이어 인식 ------------------------------------------- 
                 if(IsPlayerDir() && isGround && canAtk){
                     if(Vector2.Distance(transform.position, PlayerData.Instance.Player.transform.position) < 5f){
                         currentState = State.Attack;

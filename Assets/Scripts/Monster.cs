@@ -19,16 +19,21 @@ public class Monster : MonoBehaviour
     public bool isGround = true;
     public bool canAtk = true;
     public bool MonsterDirRight;
+    public bool Player;
     public Rigidbody2D rigid;
 
     //메소드 선언 --------------------------------------------------------
     protected Rigidbody2D rb;
     protected BoxCollider2D boxCollider;
+    protected CircleCollider2D circleCollider;
     public GameObject hitBoxCollider;
     public GameObject healthBar;
     public Animator Anim;
     public LayerMask layerMask;
     public SpriteRenderer spriteRenderer;
+
+    //자주 사용하는 new? 들 -----------------------------------------
+    public Vector2 Stop =  new Vector2(0, 0);
 
     Vector3 healthbarSize;
     // Start is called before the first frame update
@@ -71,6 +76,7 @@ public class Monster : MonoBehaviour
         }
     }
 
+    //애니메이션 재생--------------------------------------
     public bool IsPlayingAnim(string AnimName){
         if(Anim.GetCurrentAnimatorStateInfo(0).IsName(AnimName)){
             return true;
@@ -122,12 +128,12 @@ public class Monster : MonoBehaviour
         healthBar.transform.localScale = healthbarSize;
         rigid.AddForce(Vector2.up * 5, ForceMode2D.Impulse);
         if(currentHP <= 0){
-            boxCollider.enabled = false;
             spriteRenderer.flipY = true;
-            Invoke("die", 1);
+            hitBoxCollider.SetActive(false);
+            Invoke("die", 2);
         }
-
-        hitBoxCollider.SetActive(false);
+        /*new WaitForSeconds(0.25f);
+        spriteRenderer.color = new Color(1, 1, 1, 1);*/
     }
 
     public void die(){

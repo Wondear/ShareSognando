@@ -6,6 +6,7 @@ using UnityEngine;
 public class PlayerMove : MonoBehaviour
 {
     public GameManager gameManager;
+    public int atkPower; // 적의 공격력
     public float maxSpeed;
     public float jumpPower;
     Rigidbody2D rigid;
@@ -24,6 +25,7 @@ public class PlayerMove : MonoBehaviour
     public bool isLadder;
     public bool Climb =false;
     public Vector3 Lpos;
+
 
 
 
@@ -134,6 +136,7 @@ public class PlayerMove : MonoBehaviour
                 Climb = false;
                 
             }
+            //else if (rayHit.distance < 0.7f && )
         }
 
         if (Climb) // 만약 bool Climb 함수가 실행되면
@@ -169,25 +172,28 @@ public class PlayerMove : MonoBehaviour
         canDash = true; // 대쉬를 할 수 있는 상태가 됨
     }
 
-    // 적과의 충돌-------------------------------------------------------------
+   
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.tag == "Enemy" || collision.gameObject.tag == "Trap")
-        {
-            if (rigid.velocity.y < 0 && transform.position.y > collision.transform.position.y)
+
+    }
+
+ // 적과의 충돌-------------------------------------------------------------
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+        if (collision.gameObject.tag == "EnemyHit" || collision.gameObject.tag == "Trap")
+        {   
+            OnDamaged(collision.transform.position);
+            /*if (rigid.velocity.y < 0 && transform.position.y > collision.transform.position.y)
             {
-                //GameObJect.Find("Enemy").GetComponent < Monster > ().atkPower
                 OnAttack(collision.transform);
             }
             else
             {
-                OnDamaged(collision.transform.position);
-            }
+               
+            } 몬스터를 밟는 기능  혹시 모르니 생략만 해둠 */
         }
-    }
 
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
         if (collision.gameObject.tag == "Item")
         {
             bool isBronze = collision.gameObject.name.Contains("Bronze");
@@ -218,12 +224,12 @@ public class PlayerMove : MonoBehaviour
         }
     }
 
-    void OnAttack(Transform enemy)
+   /* void OnAttack(Transform enemy)
     {
         Debug.Log("Hit");
         Monster monster = enemy.GetComponent<Monster>();
         monster.TakeDamage(1);
-    }
+    }*/
     void OnDamaged(Vector2 targetPos)
     {
         gameManager.HealthDown();
