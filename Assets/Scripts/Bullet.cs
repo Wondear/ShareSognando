@@ -65,8 +65,8 @@ public class Bullet : MonoBehaviour
 
     void OnAttack(Transform enemy)
     {
-        Golem golem = enemy.GetComponent<Golem>();
-        golem.OnDamaged();
+        /*Golem golem = enemy.GetComponent<Golem>();
+        golem.OnDamaged();*/
     }
 
     void ShootBullet()

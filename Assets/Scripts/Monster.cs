@@ -76,6 +76,7 @@ public class Monster : MonoBehaviour
         }
     }
 
+
     //애니메이션 재생--------------------------------------
     public bool IsPlayingAnim(string AnimName){
         if(Anim.GetCurrentAnimatorStateInfo(0).IsName(AnimName)){
@@ -119,21 +120,30 @@ public class Monster : MonoBehaviour
     }
 
     public void TakeDamage(int dam){
-        spriteRenderer.color = new Color(1,1,1,0.4f);
+        StartCoroutine("damageColor");
         Debug.Log("Damaged");
         currentHP -= (float)dam;
         Debug.Log(currentHP);
         isHit = true;
         healthbarSize.x = currentHP / fullHP * healthbarSize.x;
         healthBar.transform.localScale = healthbarSize;
+       
         rigid.AddForce(Vector2.up * 5, ForceMode2D.Impulse);
-        if(currentHP <= 0){
-            spriteRenderer.flipY = true;
+         if (currentHP <= 0)
+        {
+            StopAllCoroutines();
+            rb.velocity = Stop;
             hitBoxCollider.SetActive(false);
+            Anim.SetTrigger("Die");
+            spriteRenderer.flipY = true;
             Invoke("die", 2);
         }
-        /*new WaitForSeconds(0.25f);
-        spriteRenderer.color = new Color(1, 1, 1, 1);*/
+    }
+
+    IEnumerator damageColor() {
+        spriteRenderer.color = new Color(1, 1, 1, 0.4f);
+        yield return new WaitForSeconds(0.4f);
+        spriteRenderer.color = new Color(1, 1, 1, 1);
     }
 
     public void die(){
