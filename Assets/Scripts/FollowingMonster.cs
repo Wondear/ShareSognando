@@ -32,7 +32,7 @@ public class FollowingMonster : Monster
         boxColliderOffset = boxCollider.offset;
         boxColliderJumpOffset = new Vector2(boxColliderJumpOffset.x, 1f);
 
-        StartCoroutine(FSM());
+        StartCoroutine("FSM");
     }
 
     IEnumerator FSM(){

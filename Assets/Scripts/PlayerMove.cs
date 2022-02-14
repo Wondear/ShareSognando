@@ -9,7 +9,7 @@ public class PlayerMove : MonoBehaviour
     public int atkPower; // 적의 공격력
     public float maxSpeed;
     public float jumpPower;
-    Rigidbody2D rigid;
+    public Rigidbody2D rigid;
     SpriteRenderer spriteRenderer;
     Animator animator;
     CapsuleCollider2D capsuleCollider;
@@ -74,6 +74,7 @@ public class PlayerMove : MonoBehaviour
             Climb = true;
             animator.SetBool("isClimb", true);
             animator.SetBool("isJumping", false);
+            //new WaitForSeconds(0.01f);
         }
    
 
@@ -181,7 +182,7 @@ public class PlayerMove : MonoBehaviour
  // 적과의 충돌-------------------------------------------------------------
     private void OnTriggerStay2D(Collider2D collision)
     {
-        if (collision.gameObject.tag == "EnemyHit" || collision.gameObject.tag == "Trap")
+        if (collision.gameObject.tag == "EnemyHit" /*|| collision.gameObject.tag == "Trap"*/)
         {   
             OnDamaged(collision.transform.position);
             /*if (rigid.velocity.y < 0 && transform.position.y > collision.transform.position.y)
