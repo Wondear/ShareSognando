@@ -63,9 +63,9 @@ public class PlayerMove : MonoBehaviour
 
         }
 
-        if (!animator.GetBool("isJumping")) // 만약 점프 애니메이션이 재생 중이면
+        if (!animator.GetBool("isJumping")) // 만약 점프 애니메이션이 재생 중이 아니면
         {
-            jumpCnt = jumpCount; // jumpCnt를 Jump Count 값으로 변경
+            jumpCnt = jumpCount; // 점프카운트 리셋
         }
 
 
