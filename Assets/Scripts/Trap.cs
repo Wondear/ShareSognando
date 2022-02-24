@@ -35,7 +35,7 @@ public class Trap : MonoBehaviour // 발동형 함정(몬스터)
     void Update() {
     }
 
-    protected void OnTriggerEnter2D(Collider2D collision) {
+    protected virtual void OnTriggerEnter2D(Collider2D collision) {
         if (collision.CompareTag("Player")) {
             player = true;
             currentState = State.Attack;
@@ -50,8 +50,6 @@ public class Trap : MonoBehaviour // 발동형 함정(몬스터)
             player = false;
         }
     }
-
-
 
 
     protected IEnumerator FSM()
@@ -78,7 +76,6 @@ public class Trap : MonoBehaviour // 발동형 함정(몬스터)
         }
 
         AttackOver();
-        currentState = State.Idle;
         yield return null;
         
     }

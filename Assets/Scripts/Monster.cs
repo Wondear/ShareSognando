@@ -33,11 +33,11 @@ public class Monster : MonoBehaviour
     public SpriteRenderer spriteRenderer;
 
     //자주 사용하는 new? 들 -----------------------------------------
-    public Vector2 Stop =  new Vector2(0, 0);
+    public Vector2 Stop =  new Vector2(0,0);
 
     Vector3 healthbarSize;
     // Start is called before the first frame update
-    protected void Awake()
+    protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         boxCollider = GetComponent<BoxCollider2D>();
@@ -128,16 +128,17 @@ public class Monster : MonoBehaviour
         healthbarSize.x = currentHP / fullHP * healthbarSize.x;
         healthBar.transform.localScale = healthbarSize;
        
-        rigid.AddForce(Vector2.up * 5, ForceMode2D.Impulse);
+        
          if (currentHP <= 0)
         {
             StopAllCoroutines();
-            rb.velocity = Stop;
+            rigid.velocity = Stop;
             hitBoxCollider.SetActive(false);
             Anim.SetTrigger("Die");
             spriteRenderer.flipY = true;
-            Invoke("die", 2);
+            Invoke("die", 4);
         }
+        rigid.AddForce(Vector2.up * 5, ForceMode2D.Impulse);
     }
 
     IEnumerator damageColor() {

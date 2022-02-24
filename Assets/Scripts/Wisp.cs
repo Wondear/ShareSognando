@@ -48,11 +48,11 @@ public class Wisp : Monster // 1회성 몬스터, 한 번 충돌 후 터짐-----------------
     IEnumerator Idle()
     {
         Anim.SetTrigger("Idle");
-        rb.velocity = new Vector2(0, transform.localScale.y * (moveSpeed));
+        rigid.velocity = new Vector2(0, transform.localScale.y * (moveSpeed));
         yield return Delay1500;
         rb.velocity = new Vector2(0, -transform.localScale.y * (moveSpeed));
         yield return Delay1500;
-        rb.velocity = Stop;
+        rigid.velocity = Stop;
         yield return Delay250;//break;
         yield break;
 
@@ -60,7 +60,7 @@ public class Wisp : Monster // 1회성 몬스터, 한 번 충돌 후 터짐-----------------
 
     IEnumerator Attack() { // 플레이어 쪽으로 이동------------------------
         Anim.SetTrigger("Attack");
-        toPlayer = new Vector2((PlayerData.Instance.Player.transform.position.x- transform.position.x) * moveSpeed,(PlayerData.Instance.Player.transform.position.y - transform.position.y)*moveSpeed);
+        
         rb.velocity = toPlayer;
         yield return null;
     }
@@ -75,7 +75,11 @@ public class Wisp : Monster // 1회성 몬스터, 한 번 충돌 후 터짐-----------------
     // Update is called once per frame
     void Update(){
         StartCoroutine("FSM");
-        if (Vector2.Distance(transform.position, PlayerData.Instance.Player.transform.position) <= 10f)
+        
+    }
+
+    void FixedUpdate() { 
+    if (Vector2.Distance(transform.position, PlayerData.Instance.Player.transform.position) <= 10f)
         {
             currentState = State.Attack;
             StopCoroutine("Idle");
@@ -85,13 +89,13 @@ public class Wisp : Monster // 1회성 몬스터, 한 번 충돌 후 터짐-----------------
             currentState = State.Idle;
             StopCoroutine("Attack");         
         }
-
+        toPlayer = new Vector2(moveSpeed/( PlayerData.Instance.Player.transform.position.x- transform.position.x) , moveSpeed / (PlayerData.Instance.Player.transform.position.y - transform.position.y));
     }
-
 
     private void OnTriggerStay2D(Collider2D collision) {
         if (collision.gameObject.tag == "Player")
         {
+            StopCoroutine("Attack");
             StopAllCoroutines();
             hitBoxCollider.SetActive(false);
             Anim.SetTrigger("Die");

@@ -10,7 +10,7 @@ public class Coral : Trap
     int X_power;
     void Awake() {
         atkDelay = 0.5f;
-        Player_rb = GameObject.Find("Player (Fixed)").GetComponent<Rigidbody2D>();
+        Player_rb = GameObject.Find("Player").GetComponent<Rigidbody2D>();
         hitBoxCollider.SetActive(false);
         StartCoroutine("FSM");
     }
