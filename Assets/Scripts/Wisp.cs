@@ -12,7 +12,6 @@ public class Wisp : Monster // 1회성 몬스터, 한 번 충돌 후 터짐-----------------
     };
 
     //public GameObject hitBox;
-    bool isdie;
     public State currentState;
     public Transform[] wallCheck; // 벽 통과를 못 한다면 충돌체와 함께 필요 
     public Vector2 toPlayer;
@@ -23,8 +22,7 @@ public class Wisp : Monster // 1회성 몬스터, 한 번 충돌 후 터짐-----------------
 
     void Awake()
     {
-       
-        isdie = false;
+
         base.Awake();
         moveSpeed = 0.5f;
         jumpPower = 0.2f;
@@ -37,13 +35,7 @@ public class Wisp : Monster // 1회성 몬스터, 한 번 충돌 후 터짐-----------------
 
     }
 
-    IEnumerator FSM()
-    {
-        for(; ; ) { 
-            yield return StartCoroutine(currentState.ToString());
-        }
 
-    }
 
     IEnumerator Idle()
     {
@@ -61,7 +53,7 @@ public class Wisp : Monster // 1회성 몬스터, 한 번 충돌 후 터짐-----------------
     IEnumerator Attack() { // 플레이어 쪽으로 이동------------------------
         Anim.SetTrigger("Attack");
         
-        rb.velocity = toPlayer;
+        rb.velocity = new Vector2(moveSpeed * (PlayerData.Instance.Player.transform.position.x - transform.position.x), moveSpeed * (PlayerData.Instance.Player.transform.position.y - transform.position.y)).normalized;
         yield return null;
     }
    
@@ -79,24 +71,28 @@ public class Wisp : Monster // 1회성 몬스터, 한 번 충돌 후 터짐-----------------
     }
 
     void FixedUpdate() { 
-    if (Vector2.Distance(transform.position, PlayerData.Instance.Player.transform.position) <= 10f)
-        {
-            currentState = State.Attack;
-            StopCoroutine("Idle");
-        }
+        if (Vector2.Distance(transform.position, PlayerData.Instance.Player.transform.position) <= 10f)
+            {
+                currentState = State.Attack;
+                StopCoroutine("Idle");
+            }
 
         else {
             currentState = State.Idle;
             StopCoroutine("Attack");         
         }
-        toPlayer = new Vector2(moveSpeed/( PlayerData.Instance.Player.transform.position.x- transform.position.x) , moveSpeed / (PlayerData.Instance.Player.transform.position.y - transform.position.y));
+
+        if (currentHP > 0) { 
+        toPlayer = new Vector2(moveSpeed*( PlayerData.Instance.Player.transform.position.x- transform.position.x) , moveSpeed * (PlayerData.Instance.Player.transform.position.y - transform.position.y));
+        }
     }
 
     private void OnTriggerStay2D(Collider2D collision) {
         if (collision.gameObject.tag == "Player")
-        {
-            StopCoroutine("Attack");
-            StopAllCoroutines();
+        {            
+            StopCoroutine("FSM");
+            StopAllCoroutines();  
+            rigid.velocity = Stop;
             hitBoxCollider.SetActive(false);
             Anim.SetTrigger("Die");
             boxCollider.enabled = false;
@@ -105,5 +101,14 @@ public class Wisp : Monster // 1회성 몬스터, 한 번 충돌 후 터짐-----------------
             spriteRenderer.flipY = true;
             Invoke("die", 4);
         }
-    } 
+    }
+    IEnumerator FSM()
+    {
+        for (; ; )
+        {
+            yield return StartCoroutine(currentState.ToString());
+        }
+
+    }
+
 }

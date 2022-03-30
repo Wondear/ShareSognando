@@ -183,8 +183,9 @@ public class PlayerMove : MonoBehaviour
     private void OnTriggerStay2D(Collider2D collision)
     {
         if (collision.gameObject.tag == "EnemyHit" /*|| collision.gameObject.tag == "Trap"*/)
-        {   
-            OnDamaged(collision.transform.position);
+        {
+           
+            OnDamaged(collision.transform.position/*, collision.gameObject.atkPower*/);
             /*if (rigid.velocity.y < 0 && transform.position.y > collision.transform.position.y)
             {
                 OnAttack(collision.transform);
@@ -194,7 +195,7 @@ public class PlayerMove : MonoBehaviour
                
             } 몬스터를 밟는 기능  혹시 모르니 생략만 해둠 */
         }
-
+        
         if (collision.gameObject.tag == "Item")
         {
             bool isBronze = collision.gameObject.name.Contains("Bronze");
@@ -231,7 +232,7 @@ public class PlayerMove : MonoBehaviour
         Monster monster = enemy.GetComponent<Monster>();
         monster.TakeDamage(1);
     }*/
-    void OnDamaged(Vector2 targetPos)
+    void OnDamaged(Vector2 targetPos/*, int Dam*/)
     {
         gameManager.HealthDown();
 

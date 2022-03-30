@@ -60,11 +60,12 @@ public class GameManager : MonoBehaviour
         stagePoint = 0;
     }
 
-    public void HealthDown()
+    public void HealthDown(/*int Dam*/)
     {
-        if (health > 1)   
+        if (health > 1)
             health--;
-        /*Monster monster = enemy.GetComponent<Monster>();
+            //health-=Dam;
+        /*Monster monster = enemy.GetComponent<Monster>(); 몬스터 공격력을 넣음(협의후 개발)
             health-=atkPower;*/
         else
         {

@@ -52,6 +52,7 @@ public class Monster : MonoBehaviour
         
     }
 
+
     IEnumerator ResetCollider(){
         while(true){
             yield return null;
