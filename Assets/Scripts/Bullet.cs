@@ -15,10 +15,12 @@ public class Bullet : MonoBehaviour
     float currentSpeed = 0f;
     public string kindOfBullet;
     private GameObject Player;
+    private GameObject Monster;
     public GameObject Raybody; //레이캐스팅을 쏘는 위치
     public GameObject ScaleDistance; //거리에 따른 스케일 변화를 위한 오브젝트 대상
     //public GameObject RayResult; //충돌하는 위치에 출력할 결과
     // Start is called before the first frame update
+    public int BulletDam = 2;
     void Start()
     {
         Player = GameObject.Find("bulletpos");
@@ -78,6 +80,7 @@ public class Bullet : MonoBehaviour
             {
                 Debug.Log("ASDF");
                 OnAttack(ray.collider.transform.parent.transform);
+                //Monster.
                 DestroyBullet();
             }
             else if(ray.collider.tag == "Platform"){
