@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class FixMonster : MonoBehaviour
@@ -8,28 +7,33 @@ public class FixMonster : MonoBehaviour
     // 약자들은 상속, 선언, 매개 변수때 사용할 것
     public int currentHP,fullHP, atkPower;
 
-    //이속 점프높이, 평타쿨(고정), 평타쿨계산(증감), 스킬" ,인식범위 
-    protected float moveSpeed, jumpPower, atkCoolTime, skill_Cool,DetectRanX, DetectRanY;
-    protected float AtkRanX, AtkRanY;
+    //이속 점프높이, 평타쿨(고정), 스킬" ,인식범위 
+    protected float moveSpeed, jumpPower, atkCoolTime, skill_Cool,DetectRan;
+    protected float AtkRan;
+    public float timer = 0.0f;
+    public float sktimer = 0.0f;
     //몬스터 상태, 기본 몬스터는 최대 평타 + 스킬 1개를 가지게함 
-    public bool isHit = false;
-    public bool isGround = true;
+    protected bool isHit = false;
+    protected bool isGround = true;
     public bool canAtk = true;
     public bool canSkill = true;
-    public bool MonsterDir;
-    public bool Player=false;
+    protected bool MonsterDirRight , PrevDir;
+    protected bool Player=false;
+    public bool haveSkill = false;
 
     //메소드 선언
     public Rigidbody2D rb;
     protected CircleCollider2D circleCollider;
-    public BoxCollider2D BoxCollider;
+    public BoxCollider2D boxCollider;
     public GameObject healthBar;
     public Animator Anim;
     public LayerMask layerMask;
     public SpriteRenderer spriteRenderer;
+    public Transform Moveoffset;
+    public Transform[] wallCheck;
 
     public Vector2 Stop = new Vector2(0, 0);
-    public Vector2 ToPlayer;
+    protected Vector2 ToPlayer;
     public Bullet bullet;
 
     public State currentState;
@@ -47,61 +51,106 @@ public class FixMonster : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         Anim = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        BoxCollider = GetComponent<BoxCollider2D>();
-
+        boxCollider = GetComponent<BoxCollider2D>();
+        Moveoffset = transform.Find("offset");
+        //wallCheck = GetComponentsInChildren<Wallcheck>();
+        Debug.Log("catch");
         //StartCoroutine(ResetCollider());
         currentState = State.Idle;
         StartCoroutine("FSM");
         StartCoroutine("damageColor");
-        StartCoroutine(AtCalc(atkCoolTime, skill_Cool));
-        //StartCoroutine(SkillCalc(skill_Cool));
+       // StartCoroutine(AtCalc(atkCoolTime));
+ 
+        moveSpeed = 3f;
+        jumpPower = 15f;
+        currentHP = 6;
+        atkCoolTime = 3f;
+        fullHP = 6;
+        atkPower = 1;
+        skill_Cool = 10;
+        DetectRan = 5;
+        AtkRan = 5;
+        MonsterDirRight = true;
+
     }
 
     protected void Start() { // Awake 보다 후순위, 
         currentHP = fullHP;
+        
     }
 
 
     // Update is called once per frame
     protected virtual void Update() // :base() 상속될 스크립트에 넣기
     {
-        if ((PlayerData.Instance.Player.transform.position.x - transform.position.x) < DetectRanX && (PlayerData.Instance.Player.transform.position.y - transform.position.y) < DetectRanY)
+        GroundCheck();
+
+        if (Vector2.Distance(transform.position, PlayerData.Instance.Player.transform.position) < DetectRan)
         {
             Player = true;
         }
-        else Player = false;
+        else  Player = false;
+        currentState = State.Idle;
 
-        if ((PlayerData.Instance.Player.transform.position.x - transform.position.x) < AtkRanX && (PlayerData.Instance.Player.transform.position.y - transform.position.y) <  AtkRanY)
+
+        if (Physics2D.OverlapCircle(wallCheck[1].position, 0.01f, layerMask))
         {
-            if (!canSkill)
-            {
-                currentState = State.Attack;
-            }
-            else
-                currentState = State.Skill;
+            MonsterFlip();
+        }
+
+
+
+        if (!canAtk) {
+            timer += Time.deltaTime;
+            if (timer >= atkCoolTime) canAtk=ToggleBool(canAtk);
+        }
+
+        if (!canSkill & haveSkill) {
+            sktimer += Time.deltaTime;
+            if (sktimer >= skill_Cool) canSkill= ToggleBool(canSkill);
         }
 
     }
     
 
-
-
     protected IEnumerator FSM() {
+        StartCoroutine(Idle());
         for (; ; ) { 
         State CS = currentState;
         yield return new WaitForSeconds(0.1f);
-            if (currentState != CS && CS == State.Idle)
+            if (Player)
+            {
+                if (Vector2.Distance(transform.position, PlayerData.Instance.Player.transform.position) < AtkRan & canSkill)
+                    currentState = State.Skill;
+                else
+                {
+                    currentState = State.Attack;
+                }
+            }
+
+
+            if ((currentState != CS && CS == State.Idle))
             {
                 StopCoroutine("Idle");
                 StartCoroutine(currentState.ToString());
                 Anim.SetTrigger(currentState.ToString());
-                yield return new WaitForSeconds(0.3f); //행동 딜레이
+
+                IsPlayerDir();
+
+                yield return new WaitForSeconds(0.3f);
+                //행동 딜레이
             }
+            else if (currentState == State.Idle & currentState != CS) {
+                StopCoroutine(CS.ToString());
+                StartCoroutine("Idle");
+            }
+            //if (Player == true & transform.position.x- PlayerData.Instance.Player.transform.position.x < 0) {
+                
+            //}
 
         }
     }
 
-    
 
 
    //------------------------------------------ 상태별 행동----------------------------------------
@@ -113,14 +162,12 @@ public class FixMonster : MonoBehaviour
 
     protected virtual IEnumerator Attack()
     {
-        canAtk = false;
-           yield return null;
+        yield return null;
     }
 
 
     protected virtual IEnumerator Skill()
     {
-        canSkill = false;
         yield return null;
     }
 
@@ -128,15 +175,16 @@ public class FixMonster : MonoBehaviour
     protected IEnumerator Dead()
     {
         Anim.SetTrigger("Dead");
+        boxCollider.enabled=false;
         rb.velocity = Stop;
         yield return null;
-        Invoke("die", 4);
+        Invoke("Die", 4);
     }
 
 
-    IEnumerator damageColor()
+    protected IEnumerator damageColor()
     {
-        while (true) {
+        while (currentHP>0) {
             if (isHit) { 
                 spriteRenderer.color = new Color(1, 1, 1, 0.4f);
                 yield return new WaitForSeconds(0.2f);
@@ -146,27 +194,6 @@ public class FixMonster : MonoBehaviour
             yield return null;
         }
     }
-
-    //----------------------------------------상태와 쿨타임 계산-------------------------------------------------
-    protected IEnumerator AtCalc(float AtC, float SkC) {
-        while (true) {
-            yield return null;
-            if(!canAtk)
-            {
-                AtC -= Time.deltaTime;
-                if (AtC <= 0)               
-                    canAtk = true;
-            }
-
-            if (!canSkill)
-            {
-                SkC -= Time.deltaTime;
-                if (SkC <= 0)
-                    canSkill = true;
-            }
-        }
-    }
-
 
 
     protected virtual void OnTriggerEnter2D(Collider2D collision)
@@ -179,7 +206,7 @@ public class FixMonster : MonoBehaviour
             if (currentHP <= 0)
             {
                 StopAllCoroutines();
-                StartCoroutine("Dead");
+                StartCoroutine(Dead());
             }
 
         }
@@ -188,7 +215,7 @@ public class FixMonster : MonoBehaviour
     //데미지가 들어가는 과정을 bullet에 넣는 것이 나을 것 같음 충돌 > 몬스터면 콜라이더 정보 가져옴 > 몬스터의 체력 감소 >   
     public void TakeDamage(int dam)
         {
-            currentHP -= (int)dam;
+            currentHP = currentHP - dam;
             isHit = true;
 
             if (currentHP <= 0)
@@ -199,8 +226,76 @@ public class FixMonster : MonoBehaviour
             }
             rb.AddForce(Vector2.up *5 , ForceMode2D.Impulse);
         }
-    public void die()
+    public void Die()
     {
         gameObject.SetActive(false);
     }
+
+
+    protected void GroundCheck()
+    {
+        if (Physics2D.BoxCast(boxCollider.bounds.center, boxCollider.size, 0, Vector2.down, 0.05f, layerMask))
+        {
+            isGround = true;
+        }
+        else
+        {
+            isGround = false;
+        }
+    }
+
+    protected bool IsPlayerDir()
+    {
+        if (transform.position.x < PlayerData.Instance.Player.transform.position.x ? MonsterDirRight : !MonsterDirRight)
+        {
+            return true;
+        }
+        else { 
+            MonsterFlip();
+            return false;
+        }
+        
+    }
+
+    protected void MonsterFlip()
+    {
+        MonsterDirRight = !MonsterDirRight;
+
+        Vector3 thisScale = transform.localScale;
+        if (MonsterDirRight)
+        {
+            thisScale.x = -Mathf.Abs(thisScale.x);
+        }
+        else
+        {
+            thisScale.x = Mathf.Abs(thisScale.x);
+        }
+        transform.localScale = thisScale;
+        rb.velocity = Vector2.zero;
+    }
+
+    protected float GetLan(float start, float end)
+    {
+        float Number = Random.Range(start, end);
+
+        return Number;
+    }
+
+    protected int GetLan(int start, int end)
+    {
+        int Number = Random.Range(start, end);
+
+        return Number;
+    }
+
+    protected bool GetLan()
+    {
+        bool randBool = (Random.value > 0.5f);
+        return randBool;
+    }
+
+    protected bool ToggleBool(bool target) {
+        return !target;
+    }
+
 }

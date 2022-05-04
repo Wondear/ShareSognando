@@ -20,7 +20,7 @@ public class Bullet : MonoBehaviour
     public GameObject ScaleDistance; //거리에 따른 스케일 변화를 위한 오브젝트 대상
     //public GameObject RayResult; //충돌하는 위치에 출력할 결과
     // Start is called before the first frame update
-    public int BulletDam = 2;
+    public int BulletDam = 3;
     void Start()
     {
         Player = GameObject.Find("bulletpos");
@@ -101,7 +101,8 @@ public class Bullet : MonoBehaviour
         //거리에 따른 레이저 스케일 변화
         if(hit.collider != null){
             ScaleDistance.transform.localScale = new Vector2(hit.distance/2, 1);
-            if(hit.collider.tag == "Enemy"){
+            if(hit.collider.tag == "EnemyHit")
+            {
                 OnAttack(hit.collider.transform);
             }
         }
@@ -141,7 +142,7 @@ public class Bullet : MonoBehaviour
         RaycastHit2D ray = Physics2D.Raycast(transform.position,transform.right,distance,isLayer);
         if(ray.collider != null)
         {
-            if(ray.collider.tag == "Enemy")
+            if(ray.collider.tag == "EnemyHit")
             {
                 OnAttack(ray.collider.transform);
                 m_tftarget = null;
@@ -158,4 +159,5 @@ public class Bullet : MonoBehaviour
             transform.right = Vector2.Lerp(transform.right, t_dir, 0.25f);
         }
     }
+
 }

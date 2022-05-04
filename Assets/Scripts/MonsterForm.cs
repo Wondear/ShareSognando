@@ -14,14 +14,9 @@ public class MonsterForm : FixMonster
         moveSpeed = 1;
         atkCoolTime = 1;
         skill_Cool = 1;
-        DetectRanX = 1;
-        DetectRanY = 1;
-        AtkRanX = 1;
-        AtkRanY = 1;
-
-        //StartCoroutine(SkillCalc(skill_Cool)); //스킬 있는 애들만 활성화
-
-    }
+        DetectRan = 1;
+        AtkRan = 1;
+   }
 
     // Update is called once per frame
     protected override void Update()
