@@ -84,7 +84,7 @@ public class FollowingMonster : Monster
         if(!isHit && isGround){
             boxCollider.offset = boxColliderJumpOffset;
             canAtk = false;
-            rb.velocity = new Vector2(-transform.localScale.x * 10f, jumpPower / 1.25f);
+            rb.velocity = new Vector2(transform.localScale.x * 10f, jumpPower / 1.25f);
             MyAnimSetTrigger("Jump");
             yield return Delay500;
             currentState = State.Idle;
@@ -97,7 +97,7 @@ public class FollowingMonster : Monster
         yield return null;
         boxCollider.offset = boxColliderJumpOffset;
 
-        rb.velocity = new Vector2(-transform.localScale.x * 6f, jumpPower / 1.3f);
+        rb.velocity = new Vector2(transform.localScale.x * 6f, jumpPower / 1.3f);
         MyAnimSetTrigger("Jump");
         yield return Delay500;
         currentState = State.Idle;

@@ -53,10 +53,10 @@ public class disruptor : MonoBehaviour
             hitBoxCollider.SetActive(false);
             Anim.SetTrigger("Die");
             spriteRenderer.flipY = true;
-            Invoke("die", 2);
+            Invoke("Die", 2);
         }
     }
-    public void die()
+    public void Die()
     {
         gameObject.SetActive(false);
     }
