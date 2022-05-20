@@ -16,7 +16,8 @@ public class MonsterForm : FixMonster
         skill_Cool = 1;
         DetectRan = 1;
         AtkRan = 1;
-   }
+        fullHP = 6;
+    }
 
     // Update is called once per frame
     protected override void Update()
@@ -28,18 +29,21 @@ public class MonsterForm : FixMonster
     protected override IEnumerator Idle()
     {
         base.Idle();
+        Corouting = ToggleBool(Corouting);
         yield return null;
     }
 
     protected override IEnumerator Attack()
     {
         base.Attack();
+        Corouting = ToggleBool(Corouting);
         yield return null;
     }
 
     protected override IEnumerator Skill()
     {
         base.Skill();
+        Corouting = ToggleBool(Corouting);
         yield return null;
     }
 }

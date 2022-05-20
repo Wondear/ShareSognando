@@ -7,7 +7,7 @@ public class Slime : FixMonster
     WaitForSeconds Delay500 = new WaitForSeconds(0.5f);
     Vector2 boxColliderOffset;
     Vector2 boxColliderJumpOffset;
-    public float runTime, deltime;
+    public float runTime =0, deltime=0;
     // Start is called before the first frame update
     protected override void Awake()
     {
@@ -15,7 +15,7 @@ public class Slime : FixMonster
         moveSpeed = 3f;
         jumpPower = 15f;
         currentHP = 6;
-        atkCoolTime = 0.5f;
+        atkCoolTime = 0.4f;
         fullHP = 6;
         atkPower = 1;
         skill_Cool = 3;
@@ -38,68 +38,91 @@ public class Slime : FixMonster
 
         }
 
-        if (currentState == State.Idle)
+        if (runTime>deltime)
         {
             deltime += Time.deltaTime;
         }
     }
+    protected override IEnumerator Idle() {
+        base.Idle();
+        //Anim.speed = 0.5f;
+        yield return Delay500;
+        StartCoroutine(Move());
+        yield return null;
+    }
 
-    protected override IEnumerator Idle()
+    protected override IEnumerator Move()
     {
-        while (!Player) {
-            yield return Delay500;
-            //currentState = State.Idle;
+        base.Move();
+
+        if (Player) {
+            while (Physics2D.OverlapCircle(wallCheck[1].position, 0.01f, layerMask) || !Player) {
+                IsPlayerDir();
+                rb.velocity = new Vector2((-transform.localScale.x) *(moveSpeed +0.5f) ,0);
+                yield return Delay100;
+            }
+        }
+
+        else
+        {
             runTime = GetLan(2f, 4f);
-            bool rundir = GetLan(); //true == another,false == same, 
-            if (rundir==true) {
+            bool rundir = GetLan(0.5f); //true == another,false == same, 
+            deltime = 0f;
+            if (rundir == true)
+            {
                 MonsterFlip();
             }
-           
-            deltime = 0f;
-            
-            while (runTime >= deltime & currentState== State.Idle)
+            while (runTime >= deltime)
             {
                 rb.velocity = new Vector2((-transform.localScale.x * moveSpeed), rb.velocity.y);
 
-                if (Physics2D.OverlapCircle(wallCheck[1].position, 0.01f, layerMask)) {
+                if (Physics2D.OverlapCircle(wallCheck[0].position, 0.01f, layerMask))
                     MonsterFlip();
-                
-                }
-               
+
+                if (Player)
+                    break;
+
+                yield return null;
             }
-           
         }
+
+        Corouting = ToggleBool(Corouting);
     } 
 
     protected override IEnumerator Attack()
     {
-            if (isGround && canAtk)
-            {
-            while (canAtk&&Player) { 
-                timer = 0;
-                canAtk = ToggleBool(canAtk);
-                rb.velocity = new Vector2(-transform.localScale.x * 10f, jumpPower / 1.25f);
-            yield return Delay500;
-            currentState = State.Idle;
-            }
+        base.Attack();
+        if (isGround && canAtk)
+        {
+            rb.velocity = new Vector2(-transform.localScale.x * 6f, jumpPower / 1.25f);
+            yield return new WaitForSeconds(1.25f);
+            timer = 0;
+            canAtk = ToggleBool(canAtk);
         }
-        yield return null;
+
+        yield return new WaitForSeconds(0.2f);
+
+        Corouting = false;
+        currentState = State.Idle;
+
     }
 
     protected override IEnumerator Skill()
     {
+        base.Skill();
         if (isGround && canSkill) {
-            while (canSkill) { 
-                sktimer = 0;
-                canSkill = ToggleBool(canSkill);
-                rb.velocity = new Vector2(-transform.localScale.x * 6f, jumpPower / 1.3f);
             yield return Delay500;
-            currentState = State.Idle;
+            rb.velocity = new Vector2(-transform.localScale.x * 10f, jumpPower / 1.3f);
+            yield return new WaitForSeconds(1.3f);
+            sktimer = 0;
+            canSkill = ToggleBool(canSkill);
 
-            yield return null;
-            }
-            
         }
+        yield return new WaitForSeconds(0.5f);
+        Corouting = false;
+        currentState = State.Idle;
+
+        yield return null;
     }
 
 }
