@@ -23,23 +23,30 @@ public class Wisp2 : FixMonster
 
     protected override void Update() {
         base.Update();
-        ToPlayer= new Vector2((PlayerData.Instance.Player.transform.position.x - transform.position.x),(PlayerData.Instance.Player.transform.position.y - transform.position.y)).normalized * moveSpeed; ;
+       
 
     }
 
     protected override IEnumerator Idle(){
         base.Idle();
+
+        StartCoroutine("Move");
+        yield return null;
+    }
+    protected override IEnumerator Move()
+    {
         while (!Player)
         {
-           
-            rb.velocity = new Vector2(0,moveSpeed );
+
+            rb.velocity = new Vector2(0, transform.localScale.y * moveSpeed / 1.5f);
             yield return new WaitForSeconds(1.5f);
-            rb.velocity = new Vector2(0, -moveSpeed);
+            rb.velocity = new Vector2(0, -(transform.localScale.y * moveSpeed) / 1.5f);
             yield return new WaitForSeconds(1.5f);
 
 
         }
         yield return null;
+        Corouting = ToggleBool(Corouting);
     }
 
     protected override IEnumerator Attack()
@@ -51,6 +58,7 @@ public class Wisp2 : FixMonster
             yield return new WaitForSeconds(0.1f);
         }
         yield return null;
+        Corouting = ToggleBool(Corouting);
     }
 
     protected override void OnTriggerEnter2D(Collider2D collision)

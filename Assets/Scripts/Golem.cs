@@ -2,78 +2,91 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Golem : Monster
+public class Golem : FixMonster   
 {
-    public enum State{
+    float runTime=0, deltime = 0; 
+    
+    //토하는 공격?을 날릴 예정, 후공몹 > 피가 떨어지면 공격 시작
+    public new enum State{
         Idle,
-        AttackIdle,
+        AttackIdle,// move
         Walk,
         MeleeAttack,
         RangeAttack
     };
 
-    public State currentState = State.Idle;
     public CapsuleCollider2D capsuleCollider;
-    public Transform[] wallCheck;
     WaitForSeconds Delay = new WaitForSeconds(0.2f);
     Vector2 boxColliderOffset;
     Vector2 boxColliderJumpOffset;
     public GameObject Vomit;
-    bool isdie;
 
-    void Awake(){
-        isdie = false;
+    protected override void Awake()
+    {
         base.Awake();
         moveSpeed = 1f;
+        atkPower = 2;
         jumpPower = 0f;
-        currentHP = 5;
         fullHP = 5;
+        atkCoolTime = 0.4f;
+        skill_Cool = 3;
+        DetectRan = 0f;//10f;
+        AtkRan = 0; //5f;
+
         atkCoolTime = 3f;
-        atkCoolTimeCalc = atkCoolTime;
-        StartCoroutine(FSM());
+        haveSkill = true;
+        //atkCoolTimeCalc = atkCoolTime;
+        //StartCoroutine(FSM());
         
     }
 
-    IEnumerator FSM(){
-        if(isdie == false){
-            while(true){
-                yield return StartCoroutine(currentState.ToString());
-            }
+    /*IEnumerator Idle(){
+      yield return Delay;
+       int vomitPercentage = Random.Range(0, 5);
+       Debug.Log(vomitPercentage);
+       if(vomitPercentage == 3){
+           //currentState = State.RangeAttack;
+       }
+       else{
+           //currentState = State.Walk;
+       }
+       base.Idle();
+       Corouting = ToggleBool(Corouting);
+       yield return null;
+   }*/
+
+
+    protected override IEnumerator Idle(){
+        base.Idle();
+
+            yield return null;
         }
+
+
+    protected override IEnumerator Move()
+    {
+        base.Move();
+
+
+    yield return null;
+    runTime = GetLan(2f, 4f);
+    bool rundir = GetLan(0.2f);
+
+    if (rundir == true)
+    {
+        MonsterFlip();
     }
 
-    IEnumerator Idle(){
-        yield return Delay;
-        int vomitPercentage = Random.Range(0, 5);
-        Debug.Log(vomitPercentage);
-        if(vomitPercentage == 3){
-            currentState = State.RangeAttack;
-        }
-        else{
-            currentState = State.Walk;
-        }
-    }
+        while (runTime >= deltime)
+        {
+            rb.velocity = new Vector2((-transform.localScale.x * moveSpeed), rb.velocity.y);
 
-    IEnumerator Walk(){
-        yield return null;
-        float runTime = Random.Range(2f, 4f);
-        int runDirection = Random.Range(-1, 4);
-        
-        if(runDirection < 0){
-            MonsterFlip();
-        }
-        while(runTime >= 0f){
-            runTime -= Time.deltaTime;
-            if(!isHit){
-                MyAnimSetTrigger("Walking");
-                rb.velocity = new Vector2(-transform.localScale.x * moveSpeed, rb.velocity.y);
+            if (Physics2D.OverlapCircle(wallCheck[1].position, 0.01f, layerMask))
+                MonsterFlip();
 
-                if(Physics2D.OverlapCircle(wallCheck[1].position, 0.01f, layerMask)){
-                    Debug.Log("Turn!");
-                    MonsterFlip();
-                }
-            }
-            else if(isHit){
+            if (currentHP < fullHP)
+            {
+                break;
                 /*if(IsPlayerDir() && isGround && canAtk){
                     if(Vector2.Distance(transform.position, PlayerData.Instance.Player.transform.position) < 5f && canAtk == true){
                         currentState = State.AttackIdle;
@@ -82,64 +95,51 @@ public class Golem : Monster
                     }
                 }*/
             }
-            currentState = State.Idle;
-            yield return null;
         }
-    }
-    IEnumerator AttackIdle(){
+            //currentState = State.Idle;
+
+
+            /* 어택 move
+            if(canAtk == true){
+                if(Vector2.Distance(transform.position, PlayerData.Instance.Player.transform.position) > 1.7f){
+                    //currentState = State.RangeAttack;
+                }
+                else{
+                    //currentState = State.MeleeAttack;
+                }
+            }
+            if(!Physics2D.OverlapCircle(wallCheck[1].position, 0.01f, layerMask) && Vector2.Distance(transform.position, PlayerData.Instance.Player.transform.position) < 7f){
+
+                rb.velocity = new Vector2(-transform.localScale.x * moveSpeed, rb.velocity.y);
+            }*/
+
+        Corouting = ToggleBool(Corouting);
+
         yield return null;
-        if(!IsPlayerDir()){
-            MonsterFlip();
-        }
-        atkCoolTimeCalc -= Time.deltaTime;
-        if(atkCoolTimeCalc <= 0f){
-            canAtk = true;
-            atkCoolTimeCalc = atkCoolTime;
-        } 
-        if(canAtk == true){
-            if(Vector2.Distance(transform.position, PlayerData.Instance.Player.transform.position) > 1.7f){
-                currentState = State.RangeAttack;
-            }
-            else{
-                currentState = State.MeleeAttack;
-            }
-        }
-        if(!Physics2D.OverlapCircle(wallCheck[1].position, 0.01f, layerMask) && Vector2.Distance(transform.position, PlayerData.Instance.Player.transform.position) < 7f){
-            MyAnimSetTrigger("Walking");
-            rb.velocity = new Vector2(-transform.localScale.x * moveSpeed, rb.velocity.y);
-        }
-        
     }
+
     IEnumerator RangeAttack(){
         Debug.Log("Vomit");
         yield return new WaitForSeconds(0.3f);
         Vomit.GetComponent<BezierShooter>().Shot();
-        currentState = State.Idle;
+        //currentState = State.Idle;
         yield return null;
     }
     IEnumerator MeleeAttack(){
         yield return null;
     }
-    
-    void Update() {
-        
-        if(!isHit && isGround && !IsPlayingAnim("Walk")){
-            MyAnimSetTrigger("Idle");
+
+    protected override void Update()
+    {
+        base.Update();
+        if (runTime > deltime)
+        {
+            deltime += Time.deltaTime;
         }
-    }
 
-    public void OnDamaged()
-    {
-        spriteRenderer.color = new Color(1,1,1,0.4f);
-        spriteRenderer.flipY = true;
-        capsuleCollider.enabled = false;
-        rigid.AddForce(Vector2.up * 5, ForceMode2D.Impulse);
-        isdie = true;
-        Invoke("DeActive", 5);
     }
+    /*if(!isHit && isGround && !IsPlayingAnim("Walk")){
+        MyAnimSetTrigger("Idle");
+    }*/
 
-    void DeActive()
-    {
-        gameObject.SetActive(false);
-    }
 }

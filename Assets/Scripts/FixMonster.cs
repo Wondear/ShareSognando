@@ -15,11 +15,16 @@ public class FixMonster : MonoBehaviour
     //몬스터 상태, 기본 몬스터는 최대 평타 + 스킬 1개를 가지게함 
     protected bool isHit = false;
     protected bool isGround = true;
-    public bool canAtk = true;
-    public bool canSkill = true;
+    protected bool canAtk = true;
+    protected bool canSkill = true;
     protected bool MonsterDirRight , PrevDir;
     protected bool Player=false;
-    public bool haveSkill = false;
+    protected bool haveSkill = false;
+    protected bool Corouting=false;
+    protected bool isDie =false;
+
+
+    public bool sival=false;
 
     //메소드 선언
     public Rigidbody2D rb;
@@ -30,18 +35,20 @@ public class FixMonster : MonoBehaviour
     public LayerMask layerMask;
     public SpriteRenderer spriteRenderer;
     public Transform Moveoffset;
-    public Transform[] wallCheck;
+    public Transform[] wallCheck; //index 0은 flip, 1은 스킬 안되는 조건
+    // 이외에는 자유
 
     public Vector2 Stop = new Vector2(0, 0);
     protected Vector2 ToPlayer;
     public Bullet bullet;
 
     public State currentState;
-    WaitForSeconds Delay100 = new WaitForSeconds(0.1f);
+    public WaitForSeconds Delay100 = new WaitForSeconds(0.1f);
     //Coroutine Idle;
 
     public enum State{
         Idle,
+        Move,
         Attack,
         Skill,
         Dead,
@@ -53,14 +60,11 @@ public class FixMonster : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         boxCollider = GetComponent<BoxCollider2D>();
         Moveoffset = transform.Find("offset");
-        //wallCheck = GetComponentsInChildren<Wallcheck>();
-        Debug.Log("catch");
         //StartCoroutine(ResetCollider());
         currentState = State.Idle;
         StartCoroutine("FSM");
-        StartCoroutine("damageColor");
        // StartCoroutine(AtCalc(atkCoolTime));
- 
+
         moveSpeed = 3f;
         jumpPower = 15f;
         currentHP = 6;
@@ -84,16 +88,15 @@ public class FixMonster : MonoBehaviour
     protected virtual void Update() // :base() 상속될 스크립트에 넣기
     {
         GroundCheck();
-
+       
         if (Vector2.Distance(transform.position, PlayerData.Instance.Player.transform.position) < DetectRan)
         {
             Player = true;
         }
         else  Player = false;
-        currentState = State.Idle;
 
 
-        if (Physics2D.OverlapCircle(wallCheck[1].position, 0.01f, layerMask))
+        if (Physics2D.OverlapCircle(wallCheck[0].position, 0.01f, layerMask))
         {
             MonsterFlip();
         }
@@ -109,90 +112,72 @@ public class FixMonster : MonoBehaviour
             sktimer += Time.deltaTime;
             if (sktimer >= skill_Cool) canSkill= ToggleBool(canSkill);
         }
-
+    ToPlayer = new Vector2((PlayerData.Instance.Player.transform.position.x - transform.position.x)*100, 
+        (PlayerData.Instance.Player.transform.position.y - transform.position.y)*100).normalized * moveSpeed;
     }
     
 
     protected IEnumerator FSM() {
-        StartCoroutine(Idle());
-        for (; ; ) { 
+        for (; ; ) {
+            yield return null;
+            if (!Corouting) { 
         State CS = currentState;
         yield return new WaitForSeconds(0.1f);
-            if (Player)
-            {
-                if (Vector2.Distance(transform.position, PlayerData.Instance.Player.transform.position) < AtkRan & canSkill)
-                    currentState = State.Skill;
-                else
+                if (Player)
                 {
-                    currentState = State.Attack;
+                    if (Physics2D.OverlapCircle (wallCheck[1].position, 0.01f, layerMask)) {
+                        currentState = State.Idle;
+                    }
+                    else if (canSkill && Vector2.Distance(transform.position, PlayerData.Instance.Player.transform.position) < AtkRan )
+                        currentState = State.Skill;
+                    else
+                    {
+                        currentState = State.Attack;
+                    }
                 }
-            }
-
-
-            if ((currentState != CS && CS == State.Idle))
-            {
-                StopCoroutine("Idle");
+                else { 
+                    currentState = State.Idle; }
+                    
+                Corouting = ToggleBool(Corouting);
                 StartCoroutine(currentState.ToString());
                 Anim.SetTrigger(currentState.ToString());
-
-                IsPlayerDir();
-
-                yield return new WaitForSeconds(0.3f);
+                if (currentState != State.Idle) { 
+                    IsPlayerDir();
+                }
                 //행동 딜레이
             }
-            else if (currentState == State.Idle & currentState != CS) {
-                StopCoroutine(CS.ToString());
-                StartCoroutine("Idle");
-            }
             //if (Player == true & transform.position.x- PlayerData.Instance.Player.transform.position.x < 0) {
-                
+
             //}
 
         }
     }
 
 
-
-   //------------------------------------------ 상태별 행동----------------------------------------
-    protected virtual IEnumerator Idle()
-    {
-        //True pl
-        yield return null;
-    }
-
-    protected virtual IEnumerator Attack()
-    {
-        yield return null;
-    }
-
-
-    protected virtual IEnumerator Skill()
-    {
-        yield return null;
-    }
-
-
     protected IEnumerator Dead()
     {
+        isDie = ToggleBool(isDie);
         Anim.SetTrigger("Dead");
         boxCollider.enabled=false;
+        rb.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
+        for (int i = 10; i > 0;  i--) {
+            spriteRenderer.color = new Color(1, 1, 1, (float)i/10);
+            yield return new WaitForSeconds(0.1f);
+        }
         rb.velocity = Stop;
         yield return null;
-        Invoke("Die", 4);
+        Invoke("Die", 1);
     }
 
 
-    protected IEnumerator damageColor()
-    {
-        while (currentHP>0) {
-            if (isHit) { 
+    protected IEnumerator damageColor(){
                 spriteRenderer.color = new Color(1, 1, 1, 0.4f);
                 yield return new WaitForSeconds(0.2f);
+                isHit = ToggleBool(isHit);
                 spriteRenderer.color = new Color(1, 1, 1, 1);
-                isHit = false;
-            }
+        
             yield return null;
-        }
+   
     }
 
 
@@ -203,29 +188,25 @@ public class FixMonster : MonoBehaviour
             bullet = collision.GetComponent< Bullet> ();
             TakeDamage(bullet.BulletDam);
             
-            if (currentHP <= 0)
-            {
-                StopAllCoroutines();
-                StartCoroutine(Dead());
-            }
-
         }
     }
 
     //데미지가 들어가는 과정을 bullet에 넣는 것이 나을 것 같음 충돌 > 몬스터면 콜라이더 정보 가져옴 > 몬스터의 체력 감소 >   
-    public void TakeDamage(int dam)
-        {
-            currentHP = currentHP - dam;
-            isHit = true;
+    public void TakeDamage(int dam){   
+        isHit = true;
+        currentHP = currentHP - dam;
 
-            if (currentHP <= 0)
-            {
-                StopAllCoroutines();
-                spriteRenderer.flipY = true;
-                
-            }
-            rb.AddForce(Vector2.up *5 , ForceMode2D.Impulse);
+        if (currentHP <= 0 & !isDie)
+        {
+            rb.AddForce(Vector2.up * 5, ForceMode2D.Impulse);
+            StopAllCoroutines();
+            StartCoroutine(Dead());
         }
+        else if (currentHP>0){
+            StartCoroutine("damageColor");
+            rb.AddForce(Vector2.up * 5, ForceMode2D.Impulse);
+        }
+    }
     public void Die()
     {
         gameObject.SetActive(false);
@@ -274,6 +255,32 @@ public class FixMonster : MonoBehaviour
         rb.velocity = Vector2.zero;
     }
 
+    //------------------------------------------ 상태별 행동----------------------------------------
+    protected virtual IEnumerator Idle()
+    {
+        rb.velocity = Stop;
+        //True pl
+        yield return null;
+    }
+
+    protected virtual IEnumerator Move()
+    {
+        //True pl
+        yield return null;
+    }
+
+    protected virtual IEnumerator Attack()
+    {
+        yield return null;
+    }
+
+
+    protected virtual IEnumerator Skill()
+    {
+        yield return null;
+    }
+
+//랜덤값 획득
     protected float GetLan(float start, float end)
     {
         float Number = Random.Range(start, end);
@@ -288,9 +295,9 @@ public class FixMonster : MonoBehaviour
         return Number;
     }
 
-    protected bool GetLan()
+    protected bool GetLan(float TruePer)
     {
-        bool randBool = (Random.value > 0.5f);
+        bool randBool = (Random.value > TruePer);
         return randBool;
     }
 
