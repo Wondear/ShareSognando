@@ -5,16 +5,16 @@ m_ProjectFiles:
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 637918429921821885
-    m_Hash: 2355340083
+      ticks: 637918470902111186
+    m_Hash: 1940487910
   m_LockFileStatus:
     m_FilePath: C:/Share_git/ShareSognando/Packages/packages-lock.json
     m_PathExists: 1
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 637918429921831858
-    m_Hash: 399856538
+      ticks: 637918470902190972
+    m_Hash: 2835518729
 m_EmbeddedPackageManifests:
   m_ManifestsStatus: {}
 m_PackageAssets:
