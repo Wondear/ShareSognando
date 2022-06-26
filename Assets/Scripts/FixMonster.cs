@@ -120,7 +120,7 @@ public class FixMonster : MonoBehaviour
     protected IEnumerator FSM() {
         for (; ; ) {
             yield return null;
-            if (!Corouting) { 
+            if (!Corouting) {
         State CS = currentState;
         yield return new WaitForSeconds(0.1f);
                 if (Player)
