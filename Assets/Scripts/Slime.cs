@@ -48,6 +48,7 @@ public class Slime : FixMonster
         //Anim.speed = 0.5f;
         yield return Delay500;
         StartCoroutine(Move());
+
         yield return null;
     }
 
@@ -56,6 +57,7 @@ public class Slime : FixMonster
         base.Move();
 
         if (Player) {
+            Anim.SetTrigger("Move");
             while (Physics2D.OverlapCircle(wallCheck[1].position, 0.01f, layerMask) || !Player) {
                 IsPlayerDir();
                 rb.velocity = new Vector2((-transform.localScale.x) *(moveSpeed +0.5f) ,0);
@@ -65,6 +67,8 @@ public class Slime : FixMonster
 
         else
         {
+            yield return new WaitForSeconds(1.0f);
+            Anim.SetTrigger("Move");
             runTime = GetLan(2f, 4f);
             bool rundir = GetLan(0.5f); //true == another,false == same, 
             deltime = 0f;
@@ -85,7 +89,7 @@ public class Slime : FixMonster
                 yield return null;
             }
         }
-
+        Anim.SetTrigger("Idel");
         Corouting = ToggleBool(Corouting);
     } 
 
