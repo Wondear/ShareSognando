@@ -9,7 +9,7 @@
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <RootNamespace></RootNamespace>
-    <ProjectGuid>{6A216410-9E88-AE0E-F02F-EF2450EA0D96}</ProjectGuid>
+    <ProjectGuid>{3B1A0ED8-1FA9-FF9A-FAB8-A52CD977389B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <AssemblyName>Assembly-CSharp</AssemblyName>
@@ -53,40 +53,9 @@
     <UnityVersion>2020.3.16f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\Wisp.cs" />
-    <Compile Include="Assets\Scripts\FollowingMonster.cs" />
-    <Compile Include="Assets\Scripts\WalkingMonster.cs" />
-    <Compile Include="Assets\Scripts\BossForm.cs" />
-    <Compile Include="Assets\Scripts\Jump_Ac.cs" />
-    <Compile Include="Assets\Scripts\BezierObject.cs" />
-    <Compile Include="Assets\Scripts\JumpSquare.cs" />
-    <Compile Include="Assets\Scripts\EnemyMove.cs" />
-    <Compile Include="Assets\Scripts\Coral.cs" />
-    <Compile Include="Assets\Scripts\Waterfalls.cs" />
     <Compile Include="Assets\Scripts\GameManager.cs" />
-    <Compile Include="Assets\Scripts\Effect\Effect_Raycast_Laser.cs" />
     <Compile Include="Assets\Scripts\SoundManager.cs" />
-    <Compile Include="Assets\Scripts\HP_bar.cs" />
-    <Compile Include="Assets\Scripts\Trap.cs" />
-    <Compile Include="Assets\Scripts\Golem.cs" />
-    <Compile Include="Assets\Scripts\PlayerMove.cs" />
-    <Compile Include="Assets\Scripts\InputJump.cs" />
-    <Compile Include="Assets\Scripts\BounceBullet.cs" />
-    <Compile Include="Assets\Scripts\disruptor.cs" />
-    <Compile Include="Assets\LayerSetting.cs" />
-    <Compile Include="Assets\Scripts\MonsterForm.cs" />
-    <Compile Include="Assets\Scripts\Bullet.cs" />
-    <Compile Include="Assets\Scripts\Wisp2.cs" />
-    <Compile Include="Assets\Scripts\PlayerData.cs" />
-    <Compile Include="Assets\Scripts\Monster.cs" />
     <Compile Include="Assets\Scripts\GhostBoat.cs" />
-    <Compile Include="Assets\Scripts\FixMonster.cs" />
-    <Compile Include="Assets\Scripts\Slime.cs" />
-    <Compile Include="Assets\Scripts\EnemyAttack.cs" />
-    <Compile Include="Assets\Scripts\PlayerAttack.cs" />
-    <Compile Include="Assets\Scripts\BezierShooter.cs" />
-    <Compile Include="Assets\Scripts\ShootingEnemy.cs" />
-    <Compile Include="Assets\Scripts\PlatformIgnore.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
