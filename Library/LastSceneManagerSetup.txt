@@ -1,5 +1,5 @@
 sceneSetups:
-- path: Assets/Scenes/NewScene.unity
+- path: Assets/Scenes/MonsterPark.unity
   isLoaded: 1
   isActive: 1
   isSubScene: 0
